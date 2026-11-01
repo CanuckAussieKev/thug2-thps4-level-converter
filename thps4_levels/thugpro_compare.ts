@@ -25,20 +25,11 @@ import * as prx from "thug2-level-converter-core/level_port/prx.ts";
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
 import * as thug2Col from "thug2-level-converter-core/level_port/thug2_col.ts";
-import { helpFromHeader } from "thug2-level-converter-core/lib/cli.ts";
+import { exitWith, helpFromHeader, isMain, print, runMain } from "thug2-level-converter-core/lib/cli.ts";
 import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
-import {
-    Float,
-    formatFixed,
-    hex8,
-    isMain,
-    print,
-    pyExit,
-    pyJsonDumps,
-    pyRound,
-    runMain,
-    writeTextPy,
-} from "thug2-level-converter-core/lib/py.ts";
+import { jsonText } from "thug2-level-converter-core/lib/json.ts";
+import { Float, formatFixed, roundTo } from "thug2-level-converter-core/lib/numbers.ts";
+import { hex8, writeText } from "thug2-level-converter-core/lib/text.ts";
 import * as compat from "thug2-thugpro-compat/profile.ts";
 import {
     CTF_NAMES,
@@ -127,7 +118,7 @@ export function compare(base: string, oursDir: string, thugpro: string, legacy =
         const d = maxDiff(p, byName.get(nm)!);
         if (d <= TOLERANCE) same += 1;
         else {
-            moved.push([names.get(nm) ?? hex8(nm), new Float(pyRound(d, 3))]);
+            moved.push([names.get(nm) ?? hex8(nm), new Float(roundTo(d, 3))]);
             if (d > worst[0]) worst = [d, names.get(nm) ?? hex8(nm)];
         }
     }
@@ -136,7 +127,7 @@ export function compare(base: string, oursDir: string, thugpro: string, legacy =
     out.nodes_thugpro = theirs.length;
     out.shared = shared;
     out.same_place = same;
-    out.worst = [new Float(pyRound(worst[0], 3)), worst[1]];
+    out.worst = [new Float(roundTo(worst[0], 3)), worst[1]];
     const crownsOurs = sequence(ours, isCrown);
     const crownsTheirs = sequence(theirs, isCrown);
     out.crowns = sameSequence(crownsOurs, crownsTheirs)[0];
@@ -219,11 +210,11 @@ export function extractNetNodes(base: string, thugpro: string, thps4Dir: string)
     const key = thugproName(base);
     const scripts = prxFile(thugpro, `${key}_scripts.prx`);
     const data = scripts === null ? null : prx.find(scripts, `levels\\${key}\\${key}.qb`);
-    if (data === null) pyExit(`THUGPRO has no levels\\${key}\\${key}.qb`);
+    if (data === null) exitWith(`THUGPRO has no levels\\${key}\\${key}.qb`);
     const [theirs, theirNames] = nodeArray(data, `${key}.qb`);
     const folder = findPath(resolveInstall(thps4Dir, "thps4"), "data", "levels", base);
     const ownFile = folder === null ? null : findPath(folder, `${base}.qb`);
-    if (ownFile === null) pyExit(`no THPS4 ${base}.qb in ${thps4Dir}`);
+    if (ownFile === null) exitWith(`no THPS4 ${base}.qb in ${thps4Dir}`);
     const own = new qb.QbFile(fs.readFileSync(ownFile), ownFile).get("NodeArray");
     const ownNames = new Set(
         (Array.isArray(own) ? own : []).filter((n): n is Struct => n instanceof Struct).map(nameOf),
@@ -235,11 +226,11 @@ export function extractNetNodes(base: string, thugpro: string, thps4Dir: string)
         const nm = nameOf(n);
         const mine = nm !== null && ownNames.has(nm);
         if (isCrown(n)) {
-            if (mine) pyExit(`${base}: THUGPRO's crown ${theirNames.get(nm!)} is THPS4's: not handled`);
+            if (mine) exitWith(`${base}: THUGPRO's crown ${theirNames.get(nm!)} is THPS4's: not handled`);
             out.crowns.push(place(n));
         } else if (isMpRestart(n)) {
             if (!mine) out.restarts.push(place(n));
-            else if (out.restarts.length) pyExit(`${base}: THPS4's restarts after THUGPRO's added ones: not handled`);
+            else if (out.restarts.length) exitWith(`${base}: THPS4's restarts after THUGPRO's added ones: not handled`);
             else out.multiplayer.push(theirNames.get(nm!) ?? hex8(nm!));
         }
     }
@@ -367,7 +358,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
         parsed = parseArgs({ args: [...argv], options: OPTIONS, allowPositionals: true, strict: true });
     } catch (e) {
         process.stderr.write(`${USAGE}\nthugpro_compare.ts: error: ${(e as Error).message}\n`);
-        pyExit(2);
+        exitWith(2);
     }
     const v = parsed.values;
     const thug2 = resolveInstall(v.thug2 ?? "C:\\Games\\THUG2\\Game", "thug2");
@@ -405,7 +396,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
             bad += 1;
         }
     }
-    if (v.json) writeTextPy(v.json, pyJsonDumps(results, 1));
+    if (v.json) writeText(v.json, jsonText(results, 1));
     return bad ? 1 : 0;
 }
 

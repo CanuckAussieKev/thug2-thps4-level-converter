@@ -30,7 +30,8 @@ import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
 import * as thug2Col from "thug2-level-converter-core/level_port/thug2_col.ts";
 import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
-import { Float, hex8, intFromBytesLE } from "thug2-level-converter-core/lib/py.ts";
+import { Float, intFromBytesLE } from "thug2-level-converter-core/lib/numbers.ts";
+import { hex8 } from "thug2-level-converter-core/lib/text.ts";
 import { maxDiff, nodeArray, position, TOLERANCE } from "thug2-thugpro-compat/thugpro_nodes.ts";
 import * as thps4 from "./thps4.ts";
 

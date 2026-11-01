@@ -9,8 +9,8 @@ import { test } from "node:test";
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { Tok } from "thug2-level-converter-core/level_port/script_port.ts";
 import { zfightGates } from "thug2-level-converter-core/level_port/zfight_gate.ts";
-import { hex8 } from "thug2-level-converter-core/lib/py.ts";
 import { pack } from "thug2-level-converter-core/lib/struct.ts";
+import { hex8 } from "thug2-level-converter-core/lib/text.ts";
 import { KEEP, main as migrate, renames } from "./migrate_layouts.ts";
 import {
     addNetNodes,

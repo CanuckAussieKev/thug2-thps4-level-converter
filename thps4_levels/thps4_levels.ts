@@ -29,11 +29,12 @@ import { Name, Struct, Vector } from "thug2-level-converter-core/level_port/qb.t
 import * as scriptPort from "thug2-level-converter-core/level_port/script_port.ts";
 import * as staging from "thug2-level-converter-core/level_port/staging.ts";
 import * as tex from "thug2-level-converter-core/level_port/tex.ts";
+import { exitWith, isMain, print, runMain } from "thug2-level-converter-core/lib/cli.ts";
 import { parseConverterArgs } from "thug2-level-converter-core/lib/converter_args.ts";
 import { resolveInstall } from "thug2-level-converter-core/lib/install.ts";
 import { requireNs } from "thug2-level-converter-core/lib/neverscript.ts";
-import { isMain, print, pyExit, pyRepr, runMain } from "thug2-level-converter-core/lib/py.ts";
 import { search, sub } from "thug2-level-converter-core/lib/re.ts";
+import { valueText } from "thug2-level-converter-core/lib/text.ts";
 import * as compat from "thug2-thugpro-compat/profile.ts";
 import * as thps4 from "./thps4.ts";
 import * as thps4Scripts from "./thps4_scripts.ts";
@@ -499,7 +500,7 @@ export function cmdConvert(args: Args): void {
                 (n) => thug2.profileExists(n),
                 (m) => thug2.modelExists(m),
             );
-            report.push(`  peds and cars: ${moving.length} nodes, ${pyRepr(movingStats)}`);
+            report.push(`  peds and cars: ${moving.length} nodes, ${valueText(movingStats)}`);
         }
         const geometryRead = readGeometry(folder, base);
         const [scene4, textures4, col4] = geometryRead;
@@ -691,7 +692,7 @@ export function cmdConvert(args: Args): void {
         }
         // (z-fighting: the scene's coplanar overlaps resolved, once its qb says what is drawn - zfight_resolve.ts)
         common.resolveZFight(levelDir, name, report);
-        if (stats !== null) report.push(`  nodes: ${converted.length} of ${array.length} kept ${pyRepr(stats)}`);
+        if (stats !== null) report.push(`  nodes: ${converted.length} of ${array.length} kept ${valueText(stats)}`);
         report.push(`  ${triggers.size} kill zones`);
 
         // The sky.
@@ -818,7 +819,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
         process.stderr.write(
             `thps4_levels.ts: error: argument --compat: invalid choice: '${compatName}' (choose from ${compat.PROFILES.join(", ")})\n`,
         );
-        pyExit(2);
+        exitWith(2);
     }
     setCompat(compatName, !parsed.flags.get("no-thugpro-new"));
     setPortChanges(!parsed.flags.get("no-port-changes"));

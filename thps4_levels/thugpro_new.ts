@@ -36,8 +36,9 @@ import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { checksum, Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
 import { plainTokens, u32 } from "thug2-level-converter-core/level_port/script_port.ts";
 import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
-import { Float, hex8 } from "thug2-level-converter-core/lib/py.ts";
+import { Float } from "thug2-level-converter-core/lib/numbers.ts";
 import { pack } from "thug2-level-converter-core/lib/struct.ts";
+import { hex8 } from "thug2-level-converter-core/lib/text.ts";
 import { nodeArray } from "thug2-thugpro-compat/thugpro_nodes.ts";
 
 export const DEFAULT_THUGPRO = path.join(process.env.LOCALAPPDATA ?? "", "THUG Pro");

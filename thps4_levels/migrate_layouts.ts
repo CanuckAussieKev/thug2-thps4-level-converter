@@ -13,9 +13,9 @@ import * as path from "node:path";
 import { parseArgs } from "node:util";
 import { migrateText } from "thug2-level-converter-core/level_port/layouts.ts";
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
-import { helpFromHeader } from "thug2-level-converter-core/lib/cli.ts";
+import { exitWith, helpFromHeader, isMain, print, runMain } from "thug2-level-converter-core/lib/cli.ts";
 import { findPath } from "thug2-level-converter-core/lib/install.ts";
-import { hex8, isMain, print, pyExit, readTextPy, runMain } from "thug2-level-converter-core/lib/py.ts";
+import { hex8, readText } from "thug2-level-converter-core/lib/text.ts";
 import { LEVELS, levelName } from "./thps4_levels.ts";
 
 const FOLDER = "thug2-decomp-layouts";
@@ -39,12 +39,12 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
         parsed = parseArgs({ args: [...argv], options: OPTIONS, allowPositionals: true, strict: true });
     } catch (e) {
         process.stderr.write(`${USAGE}\nmigrate_layouts.ts: error: ${(e as Error).message}\n`);
-        pyExit(2);
+        exitWith(2);
     }
     const v = parsed.values;
     if (v.game === undefined) {
         process.stderr.write(`${USAGE}\nmigrate_layouts.ts: error: the following arguments are required: --game\n`);
-        pyExit(2);
+        exitWith(2);
     }
     const folder = findPath(v.game, FOLDER) || findPath(v.game, "Game", FOLDER);
     if (!folder) {
@@ -64,7 +64,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
             print(`${oldName}: ${newName} already has a layout - ${path.win32.basename(oldPath)} left as it is`);
             continue;
         }
-        const [changed] = migrateText(readTextPy(oldPath), oldScene, newScene, [0, 0, 0], newName);
+        const [changed] = migrateText(readText(oldPath), oldScene, newScene, [0, 0, 0], newName);
         print(`${oldName} -> ${newName}${v["dry-run"] ? " (dry run)" : ""}`);
         done += 1;
         if (!v["dry-run"]) {

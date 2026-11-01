@@ -26,9 +26,10 @@ import * as prx from "thug2-level-converter-core/level_port/prx.ts";
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
 import * as thug2Col from "thug2-level-converter-core/level_port/thug2_col.ts";
-import { helpFromHeader } from "thug2-level-converter-core/lib/cli.ts";
+import { exitWith, helpFromHeader, isMain, print, runMain } from "thug2-level-converter-core/lib/cli.ts";
 import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
-import { hex8, isMain, print, pyExit, pyJsonDumps, runMain, writeTextPy } from "thug2-level-converter-core/lib/py.ts";
+import { jsonText } from "thug2-level-converter-core/lib/json.ts";
+import { hex8, writeText } from "thug2-level-converter-core/lib/text.ts";
 import { maxDiff, nodeArray, position } from "thug2-thugpro-compat/thugpro_nodes.ts";
 import { COMPAT, editsOf, LEVELS, levelName, loadName, STAGING } from "./thps4_levels.ts";
 import { type Check, checkDuplicates, checkEdits } from "./thugpro_edits.ts";
@@ -164,7 +165,7 @@ export function inventory(base: string, thps4Dir: string, thugpro: string, thug2
     for (const [n, data] of prx.entries(scriptsPrx)) files.set(n.toLowerCase(), data);
     out.thugpro_files = [...files.keys()].filter((n) => n.startsWith(`levels\\${key}\\`));
     const tpQb = files.get(`levels\\${key}\\${key}.qb`);
-    if (tpQb === undefined) pyExit(`${scriptsPrx}: no levels\\${key}\\${key}.qb`);
+    if (tpQb === undefined) exitWith(`${scriptsPrx}: no levels\\${key}\\${key}.qb`);
     const [tpArray, tpNames] = nodeArray(tpQb, `${key}.qb`);
     // THPS4's
     const ownFile = findPath(folder, `${base}.qb`)!;
@@ -487,7 +488,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
         parsed = parseArgs({ args: [...argv], options: OPTIONS, allowPositionals: true, strict: true });
     } catch (e) {
         process.stderr.write(`${USAGE}\nthugpro_inventory.ts: error: ${(e as Error).message}\n`);
-        pyExit(2);
+        exitWith(2);
     }
     const v = parsed.values;
     const wanted = new Set(parsed.positionals.map((x) => x.toLowerCase()));
@@ -517,7 +518,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
         );
         if (r.applied?.length) print(`  ours with the profile: ${appliedText(r.applied)}`);
     }
-    if (v.json) writeTextPy(v.json, pyJsonDumps(results, 1));
+    if (v.json) writeText(v.json, jsonText(results, 1));
     return 0;
 }
 

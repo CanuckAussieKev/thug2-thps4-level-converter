@@ -4,8 +4,9 @@
 import { FormatError, Reader } from "thug2-level-converter-core/level_port/binio.ts";
 import type { SourceColObject, SourceSector } from "thug2-level-converter-core/level_port/geometry.ts";
 import type * as thug2Scene from "thug2-level-converter-core/level_port/thug2_scene.ts";
-import { floorDiv, hex8, pyMax, pyMod } from "thug2-level-converter-core/lib/py.ts";
+import { floorDiv, floorMod, maxOf } from "thug2-level-converter-core/lib/numbers.ts";
 import { doubleArray } from "thug2-level-converter-core/lib/struct.ts";
+import { hex8 } from "thug2-level-converter-core/lib/text.ts";
 
 export const SEC_TEXCOORDS = 0x01;
 export const SEC_COLORS = 0x02;
@@ -170,7 +171,7 @@ export function readSector(r: Reader): Sector {
         const meshFlags = r.u32();
         const material = r.u32();
         const strip = r.read(`${r.u32()}H`);
-        if (strip.length && pyMax(strip) >= count) {
+        if (strip.length && maxOf(strip) >= count) {
             throw new FormatError(`${r.name}: sector ${hex8(checksum)} strip index past its ${count} vertices`);
         }
         s.meshes.push({ flags: meshFlags, material, strip });
@@ -258,7 +259,7 @@ export function readCol(data: Uint8Array, name = "col"): ColFile {
     r.offset += nodeSize;
     const left = data.length - r.offset;
     const indexCount = floorDiv(left, 2);
-    if (pyMod(left, 2) || indexCount < largeFaces! + smallFaces! - 1) {
+    if (floorMod(left, 2) || indexCount < largeFaces! + smallFaces! - 1) {
         throw new FormatError(`${name}: ${left} bytes of face indices after the nodes`);
     }
     return { objects, nodeSize, indexCount };

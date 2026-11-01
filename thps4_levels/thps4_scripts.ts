@@ -33,7 +33,9 @@ import { checksum, Name, Struct, Vector } from "thug2-level-converter-core/level
 import * as scriptPort from "thug2-level-converter-core/level_port/script_port.ts";
 import * as tex from "thug2-level-converter-core/level_port/tex.ts";
 import { resolveInstall } from "thug2-level-converter-core/lib/install.ts";
-import { pyMax, pyMin, pyParseInt, pyRepr, pySum, pyTruthy } from "thug2-level-converter-core/lib/py.ts";
+import { truthy } from "thug2-level-converter-core/lib/json.ts";
+import { maxOf, minOf, parseIntStrict, sumOf } from "thug2-level-converter-core/lib/numbers.ts";
+import { valueText } from "thug2-level-converter-core/lib/text.ts";
 import * as thps4 from "./thps4.ts";
 
 // THPS4's script files whose scripts may be brought along (the level's own files: "level"; the designers' shared
@@ -94,7 +96,7 @@ export const ANIMALS: Readonly<Record<string, { skeleton: string; anims: string 
     anl_pigeon: { skeleton: "Anl_Pigeon", anims: "animload_anl_pigeon" },
 };
 // How many kinds of left-out statements the report lists.
-export const REPORTED = pyParseInt(process.env.THPS4_SCRIPTS_REPORTED ?? "15");
+export const REPORTED = parseIntStrict(process.env.THPS4_SCRIPTS_REPORTED ?? "15");
 export const PED_SCRIPTS = `script ${PED_STAND} {\n    Ped_InitAI stand \n}\n`;
 
 function read(file: string): Buffer {
@@ -117,7 +119,7 @@ const isInt = (v: unknown): v is number => typeof v === "number" && Number.isInt
 // (Python's `x.get("Links") or []`: the links when there are some)
 function linksOf(node: Struct): qb.QbValue[] {
     const links = node.get("Links");
-    if (!pyTruthy(links)) return [];
+    if (!truthy(links)) return [];
     if (!Array.isArray(links)) throw new TypeError("Links is not a list");
     return links;
 }
@@ -251,7 +253,7 @@ export class Nodes {
         const angles = node.get("Angles");
         const entries: qb.Entry[] = [
             [key(n, "Position"), node.get("Position")!],
-            [key(n, "Angles"), pyTruthy(angles) ? angles! : new Vector("vector", [0.0, 0.0, 0.0])],
+            [key(n, "Angles"), truthy(angles) ? angles! : new Vector("vector", [0.0, 0.0, 0.0])],
             [key(n, "Name"), node.get("Name")!],
             [key(n, "Class"), key(n, cls)],
         ];
@@ -420,14 +422,14 @@ export class Nodes {
 // --- vehicles' models ---------------------------------------------------------------------------------------------
 
 function boundsOf(positions: readonly number[][]): [number[], number[]] {
-    const lo = [0, 1, 2].map((k) => pyMin(positions.map((p) => p[k]!)));
-    const hi = [0, 1, 2].map((k) => pyMax(positions.map((p) => p[k]!)));
+    const lo = [0, 1, 2].map((k) => minOf(positions.map((p) => p[k]!)));
+    const hi = [0, 1, 2].map((k) => maxOf(positions.map((p) => p[k]!)));
     const center = [0, 1, 2].map((k) => (lo[k]! + hi[k]!) / 2);
-    // (Python: sum(...) - compensated (pySum) - of (p[k] - c[k]) ** 2, then ** 0.5)
+    // (Python: sum(...) - compensated (sumOf) - of (p[k] - c[k]) ** 2, then ** 0.5)
     const radius = Math.sqrt(
-        pyMax(
+        maxOf(
             positions.map((p) =>
-                pySum(
+                sumOf(
                     [0, 1, 2].map((k) => {
                         const d = p[k]! - center[k]!;
                         return d * d;
@@ -459,7 +461,7 @@ export function mergeSectors(sectorsIn: readonly thps4.Sector[], name: number): 
     if (!sectors.length) return null;
     const normals = sectors.every((s) => thps4.SEC_NORMALS & s.flags && s.normals !== undefined);
     const textured = sectors.filter((s) => s.flags & thps4.SEC_TEXCOORDS);
-    const sets = textured.length ? pyMax(textured.map((s) => s.uvSets || 0)) : 0;
+    const sets = textured.length ? maxOf(textured.map((s) => s.uvSets || 0)) : 0;
     const out: thps4.Sector = {
         checksum: name,
         bone: -1,
@@ -525,8 +527,8 @@ export function mergeCol(objects: readonly thps4.ColObject[], name: number, turn
         );
     }
     if (!verts.length || !faces.length) return null;
-    const lo = [0, 1, 2].map((k) => pyMin(verts.map((v) => v[k]!)));
-    const hi = [0, 1, 2].map((k) => pyMax(verts.map((v) => v[k]!)));
+    const lo = [0, 1, 2].map((k) => minOf(verts.map((v) => v[k]!)));
+    const hi = [0, 1, 2].map((k) => maxOf(verts.map((v) => v[k]!)));
     return {
         checksum: name,
         flags: objects[0]!.flags,
@@ -936,7 +938,7 @@ export function convert(
     let leftOutCount = 0;
     for (const v of translator.leftOut.values()) leftOutCount += v;
     const report =
-        `nodes: ${converted.length} of ${array.length} kept ${pyRepr(stats)}\n  made ${pyRepr(made.counts)}\n` +
+        `nodes: ${converted.length} of ${array.length} kept ${valueText(stats)}\n  made ${valueText(made.counts)}\n` +
         `  scripts: ${out.size} brought along (${bytes} bytes), ${run.length} start scripts, ${dropped} trigger ` +
         `scripts not; left out ${leftOutCount} statements: ${worst
             .slice(0, REPORTED)
