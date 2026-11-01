@@ -16,7 +16,6 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as compat from "thug2-level-converter-core/compat/compat.ts";
 import { FormatError } from "thug2-level-converter-core/level_port/binio.ts";
 import * as common from "thug2-level-converter-core/level_port/common.ts";
 import * as geometry from "thug2-level-converter-core/level_port/geometry.ts";
@@ -33,6 +32,7 @@ import { parseConverterArgs } from "thug2-level-converter-core/lib/converter_arg
 import { resolveInstall } from "thug2-level-converter-core/lib/install.ts";
 import { isMain, print, pyExit, pyJoin, pyRepr, runMain } from "thug2-level-converter-core/lib/py.ts";
 import { search, sub } from "thug2-level-converter-core/lib/re.ts";
+import * as compat from "thug2-thugpro-compat/profile.ts";
 import * as thps4 from "./thps4.ts";
 import * as thps4Scripts from "./thps4_scripts.ts";
 import * as thugproEdits from "./thugpro_edits.ts";
@@ -74,7 +74,7 @@ export const INFO: Readonly<Record<string, readonly [string, string]>> = {
 // CheckForInvalidLevels turns Load_SkateShop into the main menu); it also stays thps4_skateshop on disk because the
 // front end's backdrop loads its scene and sky by those names (src/game/front/menu_backdrop.h, make_menu_level.ts).
 // A load script name that is THUGPRO's choice, not THPS4's (the skate shop's Load_practice), comes from the
-// compatibility profile thug2-level-converter-core/compat/thugpro/thps4_levels.json (README.md there: TP-20...; --compat none leaves it out).
+// compatibility profile thug2-thugpro-compat/thugpro/thps4_levels.json (README.md there: TP-20...; --compat none leaves it out).
 export const THUG2_NAMES: ReadonlySet<string> = new Set(["skateshop"]);
 // The network-game nodes a level gets from the profile (TP-21: THUGPRO's King of the Hill crown and multiplayer
 // spawns in the skate shop, which THPS4 - single player there - has none of): places only (world frame, THUG2's Pos
@@ -100,7 +100,7 @@ export const COMPAT = {
     newFiles: {} as Record<string, thugproNew.FileRef>,
 };
 
-// The compatibility profile's THPS4 data (thug2-level-converter-core/compat/compat.ts): "thugpro" (the default) or "none".
+// The compatibility profile's THPS4 data (thug2-thugpro-compat/profile.ts): "thugpro" (the default) or "none".
 export function setCompat(name: string, withNew = true): void {
     const profile = compat.load(name);
     // (THUGPRO's own content - thugpro_new, thugpro_new.ts: none with --compat none or --no-thugpro-new)
@@ -125,7 +125,7 @@ export function setCompat(name: string, withNew = true): void {
     COMPAT.doorWalls = door?.enabled === true;
 }
 
-// This project's own changes to THPS4's levels (`port_changes` in thug2-level-converter-core/compat/thugpro/thps4_levels.json -
+// This project's own changes to THPS4's levels (`port_changes` in thug2-thugpro-compat/thugpro/thps4_levels.json -
 // PC-THPS4-n, README there, "Our own changes"): neither THPS4's data nor THUGPRO's, so applied whatever --compat says;
 // --no-port-changes leaves out all but the `required` ones (what a level needs to load or make_menu_level to install
 // it: the crash guards). Each entry names the converter step that applies it (`rule`) and the levels (target.level,
@@ -159,7 +159,7 @@ const vector = (values: readonly number[]): Vector => new Vector("vector", [...v
 // TRG_SS_SkaterDropIn with MakeSkaterGoto DropIn (start_practice_run_skater); THUG2's skater has DropIn.
 export const dropInName = (level: string): string => `${level}_net_dropin`;
 
-// TP-21 (thug2-level-converter-core/compat/thugpro/thps4_levels.json net_nodes): the profile's crowns and multiplayer spawns added to the
+// TP-21 (thug2-thugpro-compat/thugpro/thps4_levels.json net_nodes): the profile's crowns and multiplayer spawns added to the
 // converted nodes (in place: their order is the order online - a crown is picked by its index), THPS4's restarts it
 // names made multiplayer ones. Returns the NeverScript to add (the drop-in script) or "".
 export function addNetNodes(
@@ -722,7 +722,7 @@ export function cmdConvert(args: Args): void {
             default_stats: typeof defaultStats === "number" ? defaultStats : 6,
             lighting: struct ? common.lighting(struct) : {},
         };
-        if (load !== name) entry.load = load; // (TP-20: thug2-level-converter-core/compat/thugpro/thps4_levels.json)
+        if (load !== name) entry.load = load; // (TP-20: thug2-thugpro-compat/thugpro/thps4_levels.json)
         if (hasSetup) entry.setup_script = thps4Scripts.setupName(name);
         manifest.levels.push(entry);
     });

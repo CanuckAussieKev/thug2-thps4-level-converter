@@ -49,7 +49,7 @@ export const SOURCES = [
     "sk4_scripts.qb",
 ];
 // THPS4's commands left out although THUG2 has them (besides script_port.LEFT_OUT) - goals, the skater's career,
-// cameras, THPS4's panels: a port change (PC-THPS4-8), its list in thug2-level-converter-core/compat/thugpro/thps4_levels.json port_changes, given
+// cameras, THPS4's panels: a port change (PC-THPS4-8), its list in thug2-thugpro-compat/thugpro/thps4_levels.json port_changes, given
 // to convert() as options.leftOut by thps4_levels.ts.
 // The skater's components (`if onground`, `if skitching`, `if doingtrick`...), its by-name members (TriggerType...) and
 // the translation of THPS4's TRIGGER_* types to THUG2's TriggerType arrays are script_port's (shared with THPS3, THUG1
@@ -701,7 +701,7 @@ export interface ConvertResult {
     translator: scriptPort.Translator;
 }
 
-// This project's own choices in convert() (port changes - thug2-level-converter-core/compat/thugpro/thps4_levels.json port_changes, README
+// This project's own choices in convert() (port changes - thug2-thugpro-compat/thugpro/thps4_levels.json port_changes, README
 // "Our own changes"; thps4_levels.ts passes them, all off with --no-port-changes):
 //   leftOut              (PC-THPS4-8) THPS4 commands left out of the brought scripts besides script_port's
 //   neverCreated         (PC-THPS4-6) the made objects no script creates and the waypoints nothing uses left out

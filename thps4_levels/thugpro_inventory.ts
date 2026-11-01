@@ -21,7 +21,6 @@
 
 import * as fs from "node:fs";
 import { parseArgs } from "node:util";
-import { maxDiff, nodeArray, position } from "thug2-level-converter-core/compat/thugpro_nodes.ts";
 import * as prx from "thug2-level-converter-core/level_port/prx.ts";
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
@@ -38,6 +37,7 @@ import {
     runMain,
     writeTextPy,
 } from "thug2-level-converter-core/lib/py.ts";
+import { maxDiff, nodeArray, position } from "thug2-thugpro-compat/thugpro_nodes.ts";
 import { COMPAT, editsOf, LEVELS, levelName, loadName, STAGING } from "./thps4_levels.ts";
 import { type Check, checkDuplicates, checkEdits } from "./thugpro_edits.ts";
 import { checkNew } from "./thugpro_new.ts";
@@ -446,7 +446,7 @@ export function inventory(base: string, thps4Dir: string, thugpro: string, thug2
     return out;
 }
 
-// The profile's edits of the level (TP-22 ... TP-28: thug2-level-converter-core/compat/thugpro/thps4_levels.json) against our converted
+// The profile's edits of the level (TP-22 ... TP-28: thug2-thugpro-compat/thugpro/thps4_levels.json) against our converted
 // level in <thug2>\thug2-decomp-thps4: per category, how many our node array / collision agrees with (null: not
 // converted there).
 export function applied(base: string, thugpro: string, thug2: string): Check[] | null {

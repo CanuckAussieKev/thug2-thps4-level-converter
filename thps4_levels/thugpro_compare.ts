@@ -14,24 +14,11 @@
 //   node thps4_levels/thugpro_compare.ts [levels...] [--thug2 C:\Games\THUG2-2] [--thugpro <dir>]
 //        [--staging <dir>] [--legacy-names] [--json out]
 //   node thps4_levels/thugpro_compare.ts --extract-thugpro [--thugpro <dir>] [--thps4 C:GamesTHPS4]
-//        (TP-21: writes THUGPRO's skate shop crown and spawns into thug2-level-converter-core/compat/thugpro/thps4_levels.json; TP-22 ...
+//        (TP-21: writes THUGPRO's skate shop crown and spawns into thug2-thugpro-compat/thugpro/thps4_levels.json; TP-22 ...
 //        TP-28: its hand edits of every level - thugpro_edits.ts; TP-29's switch is left as it is)
 
 import * as fs from "node:fs";
 import { parseArgs } from "node:util";
-import * as compat from "thug2-level-converter-core/compat/compat.ts";
-import {
-    CTF_NAMES,
-    isCrown,
-    isMpRestart,
-    maxDiff,
-    nameOf,
-    nodeArray,
-    position,
-    sameSequence,
-    sequence,
-    TOLERANCE,
-} from "thug2-level-converter-core/compat/thugpro_nodes.ts";
 import * as colCheck from "thug2-level-converter-core/level_port/col_check.ts";
 import * as prx from "thug2-level-converter-core/level_port/prx.ts";
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
@@ -52,6 +39,19 @@ import {
     runMain,
     writeTextPy,
 } from "thug2-level-converter-core/lib/py.ts";
+import * as compat from "thug2-thugpro-compat/profile.ts";
+import {
+    CTF_NAMES,
+    isCrown,
+    isMpRestart,
+    maxDiff,
+    nameOf,
+    nodeArray,
+    position,
+    sameSequence,
+    sequence,
+    TOLERANCE,
+} from "thug2-thugpro-compat/thugpro_nodes.ts";
 import { LEVELS, levelName, loadName, type NetNodes, type Placement, STAGING } from "./thps4_levels.ts";
 import { extractEdits, type LevelEdits, SECTIONS, type SectionName } from "./thugpro_edits.ts";
 import * as thugproNew from "./thugpro_new.ts";
@@ -208,7 +208,7 @@ export function compare(base: string, oursDir: string, thugpro: string, legacy =
 
 // The levels whose THUGPRO crowns and multiplayer spawns the profile takes (the user's approval, 2026-10-20: TP-21).
 export const NET_NODE_LEVELS = ["SkateShop"];
-export const PROFILE_FILE = compat.profileFile("thps4_levels"); // (thug2-level-converter-core's compat/thugpro)
+export const PROFILE_FILE = compat.profileFile("thps4_levels"); // (thug2-thugpro-compat's thugpro/)
 
 const values = (v: QbValue | undefined): number[] => (v instanceof Vector ? [...v.values] : [0.0, 0.0, 0.0]);
 
