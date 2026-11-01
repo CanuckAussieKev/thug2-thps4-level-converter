@@ -1,6 +1,6 @@
 // NOT ORIGINAL - what is new in THUGPRO's ports of THPS4's levels (in no source game: its teleports and elevator doors,
 // its host level options and their default state, London's kill zones, the nodes it added, its banners), included in
-// ours - the user's decision 2026-10-20 (Morten1337's permission). Data: tools/pipeline/compat/thugpro/thps4_levels.json
+// ours - the user's decision 2026-10-20 (Morten1337's permission). Data: thug2-level-converter-core/compat/thugpro/thps4_levels.json
 // `thugpro_new` (README.md there: "New in THUGPRO (not in any source game)", TPN-THPS4-1 ... TPN-THPS4-5).
 //
 // By reference only: the profile names the files (THUGPRO's archive, the entry in it, its size and SHA-256) and what
@@ -31,14 +31,14 @@
 import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { nodeArray } from "../compat/thugpro_nodes.ts";
-import * as prx from "../level_port/prx.ts";
-import * as qb from "../level_port/qb.ts";
-import { checksum, Name, type QbValue, Struct, Vector } from "../level_port/qb.ts";
-import { plainTokens, u32 } from "../level_port/script_port.ts";
-import { findPath, resolveInstall } from "../lib/install.ts";
-import { Float, hex8, pyJoin } from "../lib/py.ts";
-import { pack } from "../lib/struct.ts";
+import { nodeArray } from "thug2-level-converter-core/compat/thugpro_nodes.ts";
+import * as prx from "thug2-level-converter-core/level_port/prx.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { checksum, Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
+import { plainTokens, u32 } from "thug2-level-converter-core/level_port/script_port.ts";
+import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
+import { Float, hex8, pyJoin } from "thug2-level-converter-core/lib/py.ts";
+import { pack } from "thug2-level-converter-core/lib/struct.ts";
 
 export const DEFAULT_THUGPRO = pyJoin(process.env.LOCALAPPDATA ?? "", "THUG Pro");
 

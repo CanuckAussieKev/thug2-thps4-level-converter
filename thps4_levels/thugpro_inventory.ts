@@ -4,7 +4,7 @@
 // --extract-thugpro); with --thug2 each level's line is followed by how many of those edits our converted level there
 // agrees with, per category ("ours with the profile").
 //
-//   node tools/pipeline/thps4_levels/thugpro_inventory.ts [levels...] [--thps4 C:\Games\THPS4] [--thugpro <dir>]
+//   node thps4_levels/thugpro_inventory.ts [levels...] [--thps4 C:\Games\THPS4] [--thugpro <dir>]
 //        [--thug2 C:\Games\THUG2-2] [--json out]
 //
 // Nodes are matched by name. Per level:
@@ -21,14 +21,23 @@
 
 import * as fs from "node:fs";
 import { parseArgs } from "node:util";
-import { maxDiff, nodeArray, position } from "../compat/thugpro_nodes.ts";
-import * as prx from "../level_port/prx.ts";
-import * as qb from "../level_port/qb.ts";
-import { Name, type QbValue, Struct, Vector } from "../level_port/qb.ts";
-import * as thug2Col from "../level_port/thug2_col.ts";
-import { helpFromHeader } from "../lib/cli.ts";
-import { findPath, resolveInstall } from "../lib/install.ts";
-import { hex8, isMain, print, pyExit, pyJoin, pyJsonDumps, runMain, writeTextPy } from "../lib/py.ts";
+import { maxDiff, nodeArray, position } from "thug2-level-converter-core/compat/thugpro_nodes.ts";
+import * as prx from "thug2-level-converter-core/level_port/prx.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
+import * as thug2Col from "thug2-level-converter-core/level_port/thug2_col.ts";
+import { helpFromHeader } from "thug2-level-converter-core/lib/cli.ts";
+import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
+import {
+    hex8,
+    isMain,
+    print,
+    pyExit,
+    pyJoin,
+    pyJsonDumps,
+    runMain,
+    writeTextPy,
+} from "thug2-level-converter-core/lib/py.ts";
 import { COMPAT, editsOf, LEVELS, levelName, loadName, STAGING } from "./thps4_levels.ts";
 import { type Check, checkDuplicates, checkEdits } from "./thugpro_edits.ts";
 import { checkNew } from "./thugpro_new.ts";
@@ -437,7 +446,7 @@ export function inventory(base: string, thps4Dir: string, thugpro: string, thug2
     return out;
 }
 
-// The profile's edits of the level (TP-22 ... TP-28: tools/pipeline/compat/thugpro/thps4_levels.json) against our converted
+// The profile's edits of the level (TP-22 ... TP-28: thug2-level-converter-core/compat/thugpro/thps4_levels.json) against our converted
 // level in <thug2>\thug2-decomp-thps4: per category, how many our node array / collision agrees with (null: not
 // converted there).
 export function applied(base: string, thugpro: string, thug2: string): Check[] | null {

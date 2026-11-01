@@ -1,6 +1,6 @@
 // NOT ORIGINAL - compares our converted THPS4 levels with THUGPRO's own ports of them, read from the user's THUGPRO
 // install (read only: <thugpro>\data\pre\<level>_scripts.prx and <level>col.prx), for online play between the two
-//. The THPS4 counterpart of tools/pipeline/thaw_levels/thugpro_compare.ts (its helpers are
+//. The THPS4 counterpart of thug2-thaw-level-converter/thaw_levels/thugpro_compare.ts (its helpers are
 // imported from there). What has to agree for a THUGPRO player and one of ours to share a level:
 //   - the load script's name (the change-level message 0x46 / start info 0x33 carry its checksum): Load_<name>;
 //   - the world frame: skater updates carry world positions, so every node has to sit where THUGPRO's does;
@@ -8,18 +8,18 @@
 //     the same places; the game-mode nodes under the names THUG2's scripts look for (TRG_CTF_Red...).
 // Also reported: the multiplayer restarts (order and places), the CTF / flag nodes, what THUGPRO's node array has
 // that ours doesn't (by class / type, and the trigger scripts its nodes run that ours don't), and how many of each
-// side's collision faces can't be found through their BSP trees (tools/pipeline/level_port/col_check.ts).
+// side's collision faces can't be found through their BSP trees (thug2-level-converter-core/level_port/col_check.ts).
 // THUGPRO's files are only read to compare: nothing of them goes into our output.
 //
-//   node tools/pipeline/thps4_levels/thugpro_compare.ts [levels...] [--thug2 C:\Games\THUG2-2] [--thugpro <dir>]
+//   node thps4_levels/thugpro_compare.ts [levels...] [--thug2 C:\Games\THUG2-2] [--thugpro <dir>]
 //        [--staging <dir>] [--legacy-names] [--json out]
-//   node tools/pipeline/thps4_levels/thugpro_compare.ts --extract-thugpro [--thugpro <dir>] [--thps4 C:GamesTHPS4]
-//        (TP-21: writes THUGPRO's skate shop crown and spawns into tools/pipeline/compat/thugpro/thps4_levels.json; TP-22 ...
+//   node thps4_levels/thugpro_compare.ts --extract-thugpro [--thugpro <dir>] [--thps4 C:GamesTHPS4]
+//        (TP-21: writes THUGPRO's skate shop crown and spawns into thug2-level-converter-core/compat/thugpro/thps4_levels.json; TP-22 ...
 //        TP-28: its hand edits of every level - thugpro_edits.ts; TP-29's switch is left as it is)
 
 import * as fs from "node:fs";
-import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import * as compat from "thug2-level-converter-core/compat/compat.ts";
 import {
     CTF_NAMES,
     isCrown,
@@ -31,14 +31,14 @@ import {
     sameSequence,
     sequence,
     TOLERANCE,
-} from "../compat/thugpro_nodes.ts";
-import * as colCheck from "../level_port/col_check.ts";
-import * as prx from "../level_port/prx.ts";
-import * as qb from "../level_port/qb.ts";
-import { Name, type QbValue, Struct, Vector } from "../level_port/qb.ts";
-import * as thug2Col from "../level_port/thug2_col.ts";
-import { helpFromHeader } from "../lib/cli.ts";
-import { findPath, resolveInstall } from "../lib/install.ts";
+} from "thug2-level-converter-core/compat/thugpro_nodes.ts";
+import * as colCheck from "thug2-level-converter-core/level_port/col_check.ts";
+import * as prx from "thug2-level-converter-core/level_port/prx.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
+import * as thug2Col from "thug2-level-converter-core/level_port/thug2_col.ts";
+import { helpFromHeader } from "thug2-level-converter-core/lib/cli.ts";
+import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
 import {
     Float,
     formatFixed,
@@ -51,7 +51,7 @@ import {
     pyRound,
     runMain,
     writeTextPy,
-} from "../lib/py.ts";
+} from "thug2-level-converter-core/lib/py.ts";
 import { LEVELS, levelName, loadName, type NetNodes, type Placement, STAGING } from "./thps4_levels.ts";
 import { extractEdits, type LevelEdits, SECTIONS, type SectionName } from "./thugpro_edits.ts";
 import * as thugproNew from "./thugpro_new.ts";
@@ -208,7 +208,7 @@ export function compare(base: string, oursDir: string, thugpro: string, legacy =
 
 // The levels whose THUGPRO crowns and multiplayer spawns the profile takes (the user's approval, 2026-10-20: TP-21).
 export const NET_NODE_LEVELS = ["SkateShop"];
-export const PROFILE_FILE = fileURLToPath(new URL("../compat/thugpro/thps4_levels.json", import.meta.url));
+export const PROFILE_FILE = compat.profileFile("thps4_levels"); // (thug2-level-converter-core's compat/thugpro)
 
 const values = (v: QbValue | undefined): number[] => (v instanceof Vector ? [...v.values] : [0.0, 0.0, 0.0]);
 
@@ -248,7 +248,7 @@ export function extractNetNodes(base: string, thugpro: string, thps4Dir: string)
 
 const EDITS_SOURCE =
     "THUGPRO's installed data\\pre\\<level>_scripts.prx / <level>col.prx against THPS4's own Game\\data\\levels files, " +
-    "extracted by `node tools/pipeline/thps4_levels/thugpro_compare.ts --extract-thugpro` (thugpro_edits.ts; pos = THUG2's Pos axes)";
+    "extracted by `node thps4_levels/thugpro_compare.ts --extract-thugpro` (thugpro_edits.ts; pos = THUG2's Pos axes)";
 
 function extract(thugpro: string, thps4Dir: string): number {
     const profile = JSON.parse(fs.readFileSync(PROFILE_FILE, "utf-8")) as Record<string, unknown>;
@@ -256,7 +256,7 @@ function extract(thugpro: string, thps4Dir: string): number {
         _register: "TP-21",
         _source:
             "THUGPRO's installed data\\pre\\<level>_scripts.prx node arrays, extracted by " +
-            "`node tools/pipeline/thps4_levels/thugpro_compare.ts --extract-thugpro` (places only: pos = THUG2's Pos axes)",
+            "`node thps4_levels/thugpro_compare.ts --extract-thugpro` (places only: pos = THUG2's Pos axes)",
     };
     for (const base of NET_NODE_LEVELS) {
         const net = extractNetNodes(base, thugpro, thps4Dir);
@@ -315,7 +315,7 @@ function extract(thugpro: string, thps4Dir: string): number {
         _source:
             "THUGPRO's installed data\\pre\\<level>_scripts.prx (its level files: <level>.qb, <level>_scripts.qb, " +
             "<level>_thugpro.qb, models) against THPS4's own Game\\data\\levels files, extracted by `node " +
-            "tools/pipeline/thps4_levels/thugpro_compare.ts --extract-thugpro` (thugpro_new.ts)",
+            "thps4_levels/thugpro_compare.ts --extract-thugpro` (thugpro_new.ts)",
         _note:
             "THUGPRO's own content, in no source game - by reference only: `files` name THUGPRO's archive, the entry, " +
             "its size and SHA-256; the converter reads the bytes from the user's install (--thugpro) and leaves a " +
@@ -339,7 +339,7 @@ function extract(thugpro: string, thps4Dir: string): number {
             "enabled true keeps the walls as THUGPRO's",
         enabled: false,
     };
-    fs.writeFileSync(PROFILE_FILE, `${JSON.stringify(profile, null, 2)}\n`, "utf-8");
+    fs.writeFileSync(compat.profileFileToWrite("thps4_levels"), `${JSON.stringify(profile, null, 2)}\n`, "utf-8");
     print(`wrote ${PROFILE_FILE}`);
     return 0;
 }

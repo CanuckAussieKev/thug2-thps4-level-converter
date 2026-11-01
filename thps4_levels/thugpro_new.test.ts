@@ -5,8 +5,8 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { test } from "node:test";
-import { checksum, Struct } from "../level_port/qb.ts";
-import { pack } from "../lib/struct.ts";
+import { checksum, Struct } from "thug2-level-converter-core/level_port/qb.ts";
+import { pack } from "thug2-level-converter-core/lib/struct.ts";
 import {
     applyNew,
     HELPER_MAP,

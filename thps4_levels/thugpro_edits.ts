@@ -1,5 +1,5 @@
 // NOT ORIGINAL - THUGPRO's hand edits to its ports of THPS4's levels, as data in the compatibility profile
-// (tools/pipeline/compat/thugpro/thps4_levels.json, README.md there: TP-22 ... TP-29), and their applying to our converted node
+// (thug2-level-converter-core/compat/thugpro/thps4_levels.json, README.md there: TP-22 ... TP-29), and their applying to our converted node
 // arrays and collision. The user, 2026-10-20: "Everything [THUGPRO] changed needs to be in the differences files that
 // we can control with the compat flag" - `--compat thugpro` (the default) applies all of it, `--compat none` gives the
 // output from THPS4's files alone.
@@ -25,13 +25,13 @@
 //                          user's earlier request (the door open: port_changes PC-THPS4-1 / PC-THPS4-2)
 
 import * as fs from "node:fs";
-import { maxDiff, nodeArray, position, TOLERANCE } from "../compat/thugpro_nodes.ts";
-import * as prx from "../level_port/prx.ts";
-import * as qb from "../level_port/qb.ts";
-import { Name, type QbValue, Struct, Vector } from "../level_port/qb.ts";
-import * as thug2Col from "../level_port/thug2_col.ts";
-import { findPath, resolveInstall } from "../lib/install.ts";
-import { Float, hex8, intFromBytesLE } from "../lib/py.ts";
+import { maxDiff, nodeArray, position, TOLERANCE } from "thug2-level-converter-core/compat/thugpro_nodes.ts";
+import * as prx from "thug2-level-converter-core/level_port/prx.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
+import * as thug2Col from "thug2-level-converter-core/level_port/thug2_col.ts";
+import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
+import { Float, hex8, intFromBytesLE } from "thug2-level-converter-core/lib/py.ts";
 import * as thps4 from "./thps4.ts";
 
 export const ANGLE_TOLERANCE = 0.001;

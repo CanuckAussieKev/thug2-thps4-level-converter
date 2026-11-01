@@ -6,11 +6,11 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { test } from "node:test";
-import * as qb from "../level_port/qb.ts";
-import { Tok } from "../level_port/script_port.ts";
-import { zfightGates } from "../level_port/zfight_gate.ts";
-import { hex8 } from "../lib/py.ts";
-import { pack } from "../lib/struct.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { Tok } from "thug2-level-converter-core/level_port/script_port.ts";
+import { zfightGates } from "thug2-level-converter-core/level_port/zfight_gate.ts";
+import { hex8 } from "thug2-level-converter-core/lib/py.ts";
+import { pack } from "thug2-level-converter-core/lib/struct.ts";
 import { KEEP, main as migrate, renames } from "./migrate_layouts.ts";
 import {
     addNetNodes,
@@ -160,7 +160,7 @@ test("port changes: every entry has id / op / target / why, read whatever the pr
     );
 });
 
-// z-fighting gates (tools/pipeline/level_port/zfight_gate.ts): each level as the converter wrote and resolved it, at most
+// z-fighting gates (thug2-level-converter-core/level_port/zfight_gate.ts): each level as the converter wrote and resolved it, at most
 // what it was when the gate was set (2026-10-25, C:\Games\THUG2-4) - skipped
 // where there is no such conversion (THUG2_ZFIGHT_GAME: the game folder, default the main install).
 zfightGates("thps4", {

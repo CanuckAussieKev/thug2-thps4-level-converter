@@ -3,8 +3,8 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import * as qb from "../level_port/qb.ts";
-import { Name, Struct, Vector } from "../level_port/qb.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { Name, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
 import type * as thps4 from "./thps4.ts";
 import { COMPAT, editsOf, FACE_INVISIBLE, openWalls, setCompat } from "./thps4_levels.ts";
 import { applyEdits, checkEdits, emptyEdits, type LevelEdits, withoutDuplicates } from "./thugpro_edits.ts";

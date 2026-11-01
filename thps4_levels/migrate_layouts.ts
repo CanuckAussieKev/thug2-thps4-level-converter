@@ -2,20 +2,20 @@
 // checksum>.txt, src/game/front/level_editor_layout.cpp) from the names this converter used before (thps4_<lvl>) to
 // THPS4's own (levelName: alc, zoo...): the file renamed after the new scene's checksum and its scene line changed.
 // The levels didn't move (the frame is THPS4's in both), so the records stay as they are. The THAW counterpart, which
-// also moves them, is tools/pipeline/thaw_levels/migrate_layouts.ts (its migrateText is used here with no move).
+// also moves them, is thug2-thaw-level-converter/thaw_levels/migrate_layouts.ts (its migrateText is used here with no move).
 //
-//   node tools/pipeline/thps4_levels/migrate_layouts.ts --game C:\Games\THUG2-2 [--dry-run] [levels...]
+//   node thps4_levels/migrate_layouts.ts --game C:\Games\THUG2-2 [--dry-run] [levels...]
 //
 // The old file is kept as <name>.txt.before-thps4-names; a level whose new file already exists is skipped.
 
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
-import { migrateText } from "../level_port/layouts.ts";
-import * as qb from "../level_port/qb.ts";
-import { helpFromHeader } from "../lib/cli.ts";
-import { findPath } from "../lib/install.ts";
-import { hex8, isMain, print, pyExit, pyJoin, readTextPy, runMain } from "../lib/py.ts";
+import { migrateText } from "thug2-level-converter-core/level_port/layouts.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { helpFromHeader } from "thug2-level-converter-core/lib/cli.ts";
+import { findPath } from "thug2-level-converter-core/lib/install.ts";
+import { hex8, isMain, print, pyExit, pyJoin, readTextPy, runMain } from "thug2-level-converter-core/lib/py.ts";
 import { LEVELS, levelName } from "./thps4_levels.ts";
 
 const FOLDER = "thug2-decomp-layouts";

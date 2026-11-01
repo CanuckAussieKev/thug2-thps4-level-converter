@@ -1,8 +1,8 @@
 // NOT ORIGINAL - a THPS4 level's scripts, game objects, waypoints, peds and vehicles for free skate in THUG2
-// (tools/pipeline/thps4_levels/thps4_levels.ts). Nothing of either game is stored: everything is read from the user's files.
+// (thps4_levels/thps4_levels.ts). Nothing of either game is stored: everything is read from the user's files.
 //
 // THPS4's node arrays are close to THUG2's (the same classes and keys, legacy Position); its compiled scripts too:
-// tools/pipeline/level_port/script_port.ts translates them (THPS4's long-form if / else, its random tokens without weights,
+// thug2-level-converter-core/level_port/script_port.ts translates them (THPS4's long-form if / else, its random tokens without weights,
 // its switch without jumps, `object:command`). What's made of the nodes:
 //   LevelObject        THUG2's LevelObject (THPS4's sectors are in the object's own space, as THUG2's): moved by its
 //                      trigger script (run by the object).
@@ -26,14 +26,14 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as nodes from "../level_port/nodes.ts";
-import * as pedsCars from "../level_port/peds_cars.ts";
-import * as qb from "../level_port/qb.ts";
-import { checksum, Name, Struct, Vector } from "../level_port/qb.ts";
-import * as scriptPort from "../level_port/script_port.ts";
-import * as tex from "../level_port/tex.ts";
-import { resolveInstall } from "../lib/install.ts";
-import { pyJoin, pyMax, pyMin, pyParseInt, pyRepr, pySum, pyTruthy } from "../lib/py.ts";
+import * as nodes from "thug2-level-converter-core/level_port/nodes.ts";
+import * as pedsCars from "thug2-level-converter-core/level_port/peds_cars.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { checksum, Name, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
+import * as scriptPort from "thug2-level-converter-core/level_port/script_port.ts";
+import * as tex from "thug2-level-converter-core/level_port/tex.ts";
+import { resolveInstall } from "thug2-level-converter-core/lib/install.ts";
+import { pyJoin, pyMax, pyMin, pyParseInt, pyRepr, pySum, pyTruthy } from "thug2-level-converter-core/lib/py.ts";
 import * as thps4 from "./thps4.ts";
 
 // THPS4's script files whose scripts may be brought along (the level's own files: "level"; the designers' shared
@@ -49,7 +49,7 @@ export const SOURCES = [
     "sk4_scripts.qb",
 ];
 // THPS4's commands left out although THUG2 has them (besides script_port.LEFT_OUT) - goals, the skater's career,
-// cameras, THPS4's panels: a port change (PC-THPS4-8), its list in tools/pipeline/compat/thugpro/thps4_levels.json port_changes, given
+// cameras, THPS4's panels: a port change (PC-THPS4-8), its list in thug2-level-converter-core/compat/thugpro/thps4_levels.json port_changes, given
 // to convert() as options.leftOut by thps4_levels.ts.
 // The skater's components (`if onground`, `if skitching`, `if doingtrick`...), its by-name members (TriggerType...) and
 // the translation of THPS4's TRIGGER_* types to THUG2's TriggerType arrays are script_port's (shared with THPS3, THUG1
@@ -82,7 +82,7 @@ export const PED_STAND = "thps4_ped_stand";
 // (alc) that is THPS4's own setup script's name (its Levels.qb: setup_script=alc_setup), which it spawns.
 export const setupName = (level: string): string => `${level}_ported_setup`;
 // The game modes' flags (see the top): THPS4's own nodes under the names THUG2's scripts look for, with THUG2's
-// flag models. (As tools/pipeline/thaw_levels/thaw_scripts.ts keeps THAW's.)
+// flag models. (As thug2-level-converter-core/thaw/thaw_scripts.ts keeps THAW's.)
 export const FLAG_MODELS = "gameobjects\\flags\\";
 export const GAME_MODE_NAMES = /^trg_(ctf_(red|blue|green|yellow)(_base)?|flag_(red|blue|green|yellow))$/i;
 const FLAG_KEYS = new Set(["Type", "model", "lod_dist1", "lod_dist2"].map(checksum));
@@ -380,7 +380,7 @@ export class Nodes {
             const type = node.get("Type");
             if (!(type instanceof Name)) throw new TypeError("a pedestrian's Type is not a name");
             const chosen = profile(n.get(type.value) ?? "", this.assets);
-            // (the skeleton the profile's model is rigged to: tools/pipeline/level_port/ped_rigs.ts)
+            // (the skeleton the profile's model is rigged to: thug2-level-converter-core/level_port/ped_rigs.ts)
             const rig = this.assets.rig(chosen);
             let entries: qb.Entry[] = [
                 ...this.base(node, "Pedestrian"),
@@ -701,7 +701,7 @@ export interface ConvertResult {
     translator: scriptPort.Translator;
 }
 
-// This project's own choices in convert() (port changes - tools/pipeline/compat/thugpro/thps4_levels.json port_changes, README
+// This project's own choices in convert() (port changes - thug2-level-converter-core/compat/thugpro/thps4_levels.json port_changes, README
 // "Our own changes"; thps4_levels.ts passes them, all off with --no-port-changes):
 //   leftOut              (PC-THPS4-8) THPS4 commands left out of the brought scripts besides script_port's
 //   neverCreated         (PC-THPS4-6) the made objects no script creates and the waypoints nothing uses left out

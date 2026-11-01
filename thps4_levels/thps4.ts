@@ -1,11 +1,11 @@
 // THPS4 PC level files (Game\data\levels\<Lvl>\): <lvl>scn.dat (scene) and <lvl>col.dat (collision, version 8).
-// The texture dictionary <lvl>tex.dat is THUG2's format already (tools/pipeline/level_port/tex.ts).
+// The texture dictionary <lvl>tex.dat is THUG2's format already (thug2-level-converter-core/level_port/tex.ts).
 
-import { FormatError, Reader } from "../level_port/binio.ts";
-import type { SourceColObject, SourceSector } from "../level_port/geometry.ts";
-import type * as thug2Scene from "../level_port/thug2_scene.ts";
-import { floorDiv, hex8, pyMax, pyMod } from "../lib/py.ts";
-import { doubleArray } from "../lib/struct.ts";
+import { FormatError, Reader } from "thug2-level-converter-core/level_port/binio.ts";
+import type { SourceColObject, SourceSector } from "thug2-level-converter-core/level_port/geometry.ts";
+import type * as thug2Scene from "thug2-level-converter-core/level_port/thug2_scene.ts";
+import { floorDiv, hex8, pyMax, pyMod } from "thug2-level-converter-core/lib/py.ts";
+import { doubleArray } from "thug2-level-converter-core/lib/struct.ts";
 
 export const SEC_TEXCOORDS = 0x01;
 export const SEC_COLORS = 0x02;

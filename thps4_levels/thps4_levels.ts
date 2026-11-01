@@ -1,38 +1,38 @@
 // NOT ORIGINAL - converts Tony Hawk's Pro Skater 4 (PC) levels to THUG2's formats so that THUG2 can load and play
 // them (see README.md). Nothing of either game is stored in the repo: the files are made from the user's own copies.
 //
-//   node tools/pipeline/thps4_levels/thps4_levels.ts selfcheck [--thug2 C:\Games\THUG2] [--thps4 C:\Games\THPS4]
-//   node tools/pipeline/thps4_levels/thps4_levels.ts convert [levels...] [--thug2 ...] [--thps4 ...] [--out <folder>]
+//   node thps4_levels/thps4_levels.ts selfcheck [--thug2 C:\Games\THUG2] [--thps4 C:\Games\THPS4]
+//   node thps4_levels/thps4_levels.ts convert [levels...] [--thug2 ...] [--thps4 ...] [--out <folder>]
 //        [--compat thugpro|none] [--no-thugpro-new] [--no-port-changes]
 //   then: node tools/pipeline/menu_level/make_menu_level.ts   (installs them into the data overlay, with level select signs)
 //
 // convert writes <thug2>\thug2-decomp-thps4\ (not read by the game): levels\thps4_<lvl>\thps4_<lvl>.scn.xbx /
 // .tex.xbx / .col.xbx / .qb (the node array), the skies the same way, and levels.json (what make_menu_level.ts adds to
-// Levels.qb and the level select: tools/pipeline/level_port/ported_levels.ts). make_menu_level.ts copies the levels folder into
+// Levels.qb and the level select: thug2-level-converter-core/level_port/ported_levels.ts). make_menu_level.ts copies the levels folder into
 // the overlay (<thug2>\thug2-decomp-data), which the game serves in place of the game's files.
 //
-// The THUG2 formats, the geometry conversion, the node arrays and the installing are shared with tools/pipeline/thug1_levels
-// (tools/pipeline/level_port); this folder has THPS4's own formats (thps4.ts) and its levels.
+// The THUG2 formats, the geometry conversion, the node arrays and the installing are shared with thug2-thug1-level-converter/thug1_levels
+// (thug2-level-converter-core/level_port); this folder has THPS4's own formats (thps4.ts) and its levels.
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as compat from "../compat/compat.ts";
-import { FormatError } from "../level_port/binio.ts";
-import * as common from "../level_port/common.ts";
-import * as geometry from "../level_port/geometry.ts";
-import * as nodes from "../level_port/nodes.ts";
-import * as overlayBias from "../level_port/overlay_bias.ts";
-import * as pedRigs from "../level_port/ped_rigs.ts";
-import * as pedsCars from "../level_port/peds_cars.ts";
-import * as portedLevels from "../level_port/ported_levels.ts";
-import * as qb from "../level_port/qb.ts";
-import { Name, Struct, Vector } from "../level_port/qb.ts";
-import * as scriptPort from "../level_port/script_port.ts";
-import * as tex from "../level_port/tex.ts";
-import { parseConverterArgs } from "../lib/converter_args.ts";
-import { resolveInstall } from "../lib/install.ts";
-import { isMain, print, pyExit, pyJoin, pyRepr, runMain } from "../lib/py.ts";
-import { search, sub } from "../lib/re.ts";
+import * as compat from "thug2-level-converter-core/compat/compat.ts";
+import { FormatError } from "thug2-level-converter-core/level_port/binio.ts";
+import * as common from "thug2-level-converter-core/level_port/common.ts";
+import * as geometry from "thug2-level-converter-core/level_port/geometry.ts";
+import * as nodes from "thug2-level-converter-core/level_port/nodes.ts";
+import * as overlayBias from "thug2-level-converter-core/level_port/overlay_bias.ts";
+import * as pedRigs from "thug2-level-converter-core/level_port/ped_rigs.ts";
+import * as pedsCars from "thug2-level-converter-core/level_port/peds_cars.ts";
+import * as portedLevels from "thug2-level-converter-core/level_port/ported_levels.ts";
+import * as qb from "thug2-level-converter-core/level_port/qb.ts";
+import { Name, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
+import * as scriptPort from "thug2-level-converter-core/level_port/script_port.ts";
+import * as tex from "thug2-level-converter-core/level_port/tex.ts";
+import { parseConverterArgs } from "thug2-level-converter-core/lib/converter_args.ts";
+import { resolveInstall } from "thug2-level-converter-core/lib/install.ts";
+import { isMain, print, pyExit, pyJoin, pyRepr, runMain } from "thug2-level-converter-core/lib/py.ts";
+import { search, sub } from "thug2-level-converter-core/lib/re.ts";
 import * as thps4 from "./thps4.ts";
 import * as thps4Scripts from "./thps4_scripts.ts";
 import * as thugproEdits from "./thugpro_edits.ts";
@@ -46,7 +46,7 @@ export const LEVELS = ["Alc", "Cnv", "Hof", "Jnk", "Kon", "Lon", "SF2", "Sch", "
 // The level select's numbers for the signs (each sign needs its own; none of them has career records - the info
 // panel skips them, as make_menu_level.ts's SKATE SHOP / TEST LEVEL at 18 / 21).
 export const SIGN_NUMBERS = [19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 31];
-// Every level's peds and cars are brought over (tools/pipeline/level_port/peds_cars.ts): the skate shop's pros on the
+// Every level's peds and cars are brought over (thug2-level-converter-core/level_port/peds_cars.ts): the skate shop's pros on the
 // halfpipe, the people walking by and the cars on the road (also the front end's: make_menu_level.ts copies them);
 // every level's walkers and Car_Generic01 cars - but where a port change (PC-THPS4-4, rule peds_cars) leaves them out.
 export const pedsCarsWanted = (base: string): boolean => !portChanges("peds_cars", base).length;
@@ -74,7 +74,7 @@ export const INFO: Readonly<Record<string, readonly [string, string]>> = {
 // CheckForInvalidLevels turns Load_SkateShop into the main menu); it also stays thps4_skateshop on disk because the
 // front end's backdrop loads its scene and sky by those names (src/game/front/menu_backdrop.h, make_menu_level.ts).
 // A load script name that is THUGPRO's choice, not THPS4's (the skate shop's Load_practice), comes from the
-// compatibility profile tools/pipeline/compat/thugpro/thps4_levels.json (README.md there: TP-20...; --compat none leaves it out).
+// compatibility profile thug2-level-converter-core/compat/thugpro/thps4_levels.json (README.md there: TP-20...; --compat none leaves it out).
 export const THUG2_NAMES: ReadonlySet<string> = new Set(["skateshop"]);
 // The network-game nodes a level gets from the profile (TP-21: THUGPRO's King of the Hill crown and multiplayer
 // spawns in the skate shop, which THPS4 - single player there - has none of): places only (world frame, THUG2's Pos
@@ -100,7 +100,7 @@ export const COMPAT = {
     newFiles: {} as Record<string, thugproNew.FileRef>,
 };
 
-// The compatibility profile's THPS4 data (tools/pipeline/compat/compat.ts): "thugpro" (the default) or "none".
+// The compatibility profile's THPS4 data (thug2-level-converter-core/compat/compat.ts): "thugpro" (the default) or "none".
 export function setCompat(name: string, withNew = true): void {
     const profile = compat.load(name);
     // (THUGPRO's own content - thugpro_new, thugpro_new.ts: none with --compat none or --no-thugpro-new)
@@ -125,7 +125,7 @@ export function setCompat(name: string, withNew = true): void {
     COMPAT.doorWalls = door?.enabled === true;
 }
 
-// This project's own changes to THPS4's levels (`port_changes` in tools/pipeline/compat/thugpro/thps4_levels.json -
+// This project's own changes to THPS4's levels (`port_changes` in thug2-level-converter-core/compat/thugpro/thps4_levels.json -
 // PC-THPS4-n, README there, "Our own changes"): neither THPS4's data nor THUGPRO's, so applied whatever --compat says;
 // --no-port-changes leaves out all but the `required` ones (what a level needs to load or make_menu_level to install
 // it: the crash guards). Each entry names the converter step that applies it (`rule`) and the levels (target.level,
@@ -159,7 +159,7 @@ const vector = (values: readonly number[]): Vector => new Vector("vector", [...v
 // TRG_SS_SkaterDropIn with MakeSkaterGoto DropIn (start_practice_run_skater); THUG2's skater has DropIn.
 export const dropInName = (level: string): string => `${level}_net_dropin`;
 
-// TP-21 (tools/pipeline/compat/thugpro/thps4_levels.json net_nodes): the profile's crowns and multiplayer spawns added to the
+// TP-21 (thug2-level-converter-core/compat/thugpro/thps4_levels.json net_nodes): the profile's crowns and multiplayer spawns added to the
 // converted nodes (in place: their order is the order online - a crown is picked by its index), THPS4's restarts it
 // names made multiplayer ones. Returns the NeverScript to add (the drop-in script) or "".
 export function addNetNodes(
@@ -481,7 +481,7 @@ export function cmdConvert(args: Args): void {
         let kills = nodes.killScripts(q, levelScripts);
         const names = new Map(q.names);
         if (levelScripts) for (const [k, v] of levelScripts.names) if (!names.has(k)) names.set(k, v);
-        // The peds and cars (THUG2's own ped AI and cars, tools/pipeline/level_port/peds_cars.ts), after the converted nodes.
+        // The peds and cars (THUG2's own ped AI and cars, thug2-level-converter-core/level_port/peds_cars.ts), after the converted nodes.
         let moving: Struct[] = [];
         let movingScripts = new Map<string, string>();
         if (pedsCarsWanted(base)) {
@@ -611,7 +611,7 @@ export function cmdConvert(args: Args): void {
             extraText += made.text;
         }
         // Every human ped on the skeleton its THUG2 profile's model is rigged to (a woman's on THPS6_human is twisted),
-        // and the level's load_level_anims for the Ped_Female animations (tools/pipeline/level_port/ped_rigs.ts).
+        // and the level's load_level_anims for the Ped_Female animations (thug2-level-converter-core/level_port/ped_rigs.ts).
         const rigs = pedRigs.fixPedRigs([...converted, ...moving], names, (v) => thug2.femaleRigs.has(v));
         if (rigs.changed.length) report.push(`  peds given their profile's skeleton: ${rigs.changed.join(", ")}`);
         if (/^script load_level_anims\b/im.test(extraText)) throw new FormatError(`${name}: load_level_anims defined`);
@@ -722,7 +722,7 @@ export function cmdConvert(args: Args): void {
             default_stats: typeof defaultStats === "number" ? defaultStats : 6,
             lighting: struct ? common.lighting(struct) : {},
         };
-        if (load !== name) entry.load = load; // (TP-20: tools/pipeline/compat/thugpro/thps4_levels.json)
+        if (load !== name) entry.load = load; // (TP-20: thug2-level-converter-core/compat/thugpro/thps4_levels.json)
         if (hasSetup) entry.setup_script = thps4Scripts.setupName(name);
         manifest.levels.push(entry);
     });
@@ -794,7 +794,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
             out: { kind: "string" },
             ns: { kind: "string", default: common.NS },
             "no-scripts": { kind: "flag" },
-            // compatibility profile (tools/pipeline/compat): thugpro - the skate shop's load script as THUGPRO's (default),
+            // compatibility profile (thug2-level-converter-core/compat): thugpro - the skate shop's load script as THUGPRO's (default),
             // or none
             compat: { kind: "string", default: "thugpro" },
             // the names this converter used before: thps4_<lvl> for every level
@@ -834,7 +834,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
         thugproBanners: parsed.flags.get("thugpro-banners")!,
         extra: parsed.lists.get("extra")!,
     };
-    // (the install root or the game folder itself: C:\Games\THUG2 -> C:\Games\THUG2\Game - tools/pipeline/lib/install.ts)
+    // (the install root or the game folder itself: C:\Games\THUG2 -> C:\Games\THUG2\Game - thug2-level-converter-core/lib/install.ts)
     args.thug2 = resolveInstall(args.thug2, "thug2");
     if (args.command === "selfcheck") return cmdSelfcheck(args);
     cmdConvert(args);
