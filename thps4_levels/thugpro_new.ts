@@ -36,11 +36,11 @@ import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { checksum, Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
 import { plainTokens, u32 } from "thug2-level-converter-core/level_port/script_port.ts";
 import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
-import { Float, hex8, pyJoin } from "thug2-level-converter-core/lib/py.ts";
+import { Float, hex8 } from "thug2-level-converter-core/lib/py.ts";
 import { pack } from "thug2-level-converter-core/lib/struct.ts";
 import { nodeArray } from "thug2-thugpro-compat/thugpro_nodes.ts";
 
-export const DEFAULT_THUGPRO = pyJoin(process.env.LOCALAPPDATA ?? "", "THUG Pro");
+export const DEFAULT_THUGPRO = path.join(process.env.LOCALAPPDATA ?? "", "THUG Pro");
 
 // --- the data -------------------------------------------------------------------------------------------------------
 

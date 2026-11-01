@@ -18,6 +18,7 @@
 //        TP-28: its hand edits of every level - thugpro_edits.ts; TP-29's switch is left as it is)
 
 import * as fs from "node:fs";
+import * as path from "node:path";
 import { parseArgs } from "node:util";
 import * as colCheck from "thug2-level-converter-core/level_port/col_check.ts";
 import * as prx from "thug2-level-converter-core/level_port/prx.ts";
@@ -33,7 +34,6 @@ import {
     isMain,
     print,
     pyExit,
-    pyJoin,
     pyJsonDumps,
     pyRound,
     runMain,
@@ -56,7 +56,7 @@ import { LEVELS, levelName, loadName, type NetNodes, type Placement, STAGING } f
 import { extractEdits, type LevelEdits, SECTIONS, type SectionName } from "./thugpro_edits.ts";
 import * as thugproNew from "./thugpro_new.ts";
 
-const DEFAULT_THUGPRO = pyJoin(process.env.LOCALAPPDATA ?? "", "THUG Pro");
+const DEFAULT_THUGPRO = path.join(process.env.LOCALAPPDATA ?? "", "THUG Pro");
 
 // THUGPRO's file names for a THPS4 level: its load script's name without Load_ (THUGPRO names its files after it).
 const thugproName = (base: string): string => loadName(base).toLowerCase();
@@ -92,7 +92,7 @@ export function compare(base: string, oursDir: string, thugpro: string, legacy =
     const key = thugproName(base);
     const out: Result = { base, level: mine, load: `Load_${load}`, thugpro_load: `Load_${key}` };
     out.same_load = load.toLowerCase() === key;
-    const oursQb = pyJoin(oursDir, mine, `${mine}.qb`);
+    const oursQb = path.join(oursDir, mine, `${mine}.qb`);
     if (!fs.existsSync(oursQb)) {
         out.error = `not converted (${oursQb})`;
         return out;
@@ -183,7 +183,7 @@ export function compare(base: string, oursDir: string, thugpro: string, legacy =
     }
     out.trigger_scripts_thugpro_only = Object.fromEntries([...missing].sort((a, b) => b[1] - a[1]));
     // collision
-    const ourCol = pyJoin(oursDir, mine, `${mine}.col.xbx`);
+    const ourCol = path.join(oursDir, mine, `${mine}.col.xbx`);
     if (fs.existsSync(ourCol)) {
         const [faces, missingFaces] = colCheck.check(thug2Col.readCol(fs.readFileSync(ourCol), ourCol));
         out.col_ours = [faces, missingFaces];
@@ -373,7 +373,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
     const thug2 = resolveInstall(v.thug2 ?? "C:\\Games\\THUG2\\Game", "thug2");
     const thugpro = v.thugpro ?? DEFAULT_THUGPRO;
     if (v["extract-thugpro"]) return extract(thugpro, v.thps4 ?? "C:\\Games\\THPS4");
-    const oursDir = v.staging || pyJoin(thug2, STAGING, "levels");
+    const oursDir = v.staging || path.join(thug2, STAGING, "levels");
     const legacy = !!v["legacy-names"];
     let bases = [...LEVELS];
     if (parsed.positionals.length) {

@@ -20,6 +20,7 @@
 // Collision: per object (by name) against our converted collision - added, removed, other face count, other bounds.
 
 import * as fs from "node:fs";
+import * as path from "node:path";
 import { parseArgs } from "node:util";
 import * as prx from "thug2-level-converter-core/level_port/prx.ts";
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
@@ -27,22 +28,13 @@ import { Name, type QbValue, Struct, Vector } from "thug2-level-converter-core/l
 import * as thug2Col from "thug2-level-converter-core/level_port/thug2_col.ts";
 import { helpFromHeader } from "thug2-level-converter-core/lib/cli.ts";
 import { findPath, resolveInstall } from "thug2-level-converter-core/lib/install.ts";
-import {
-    hex8,
-    isMain,
-    print,
-    pyExit,
-    pyJoin,
-    pyJsonDumps,
-    runMain,
-    writeTextPy,
-} from "thug2-level-converter-core/lib/py.ts";
+import { hex8, isMain, print, pyExit, pyJsonDumps, runMain, writeTextPy } from "thug2-level-converter-core/lib/py.ts";
 import { maxDiff, nodeArray, position } from "thug2-thugpro-compat/thugpro_nodes.ts";
 import { COMPAT, editsOf, LEVELS, levelName, loadName, STAGING } from "./thps4_levels.ts";
 import { type Check, checkDuplicates, checkEdits } from "./thugpro_edits.ts";
 import { checkNew } from "./thugpro_new.ts";
 
-const DEFAULT_THUGPRO = pyJoin(process.env.LOCALAPPDATA ?? "", "THUG Pro");
+const DEFAULT_THUGPRO = path.join(process.env.LOCALAPPDATA ?? "", "THUG Pro");
 const TOLERANCE = 0.1;
 const ANGLE_TOLERANCE = 0.001;
 export const NET_TYPES: ReadonlySet<string> = new Set(["multiplayer", "horse", "ctf", "ctf_1", "ctf_2", "team"]);
@@ -180,7 +172,7 @@ export function inventory(base: string, thps4Dir: string, thugpro: string, thug2
     const ownArray = ownQ.get("NodeArray") as QbValue[];
     const ownScriptsFile = fs.readdirSync(folder).find((f) => f.toLowerCase() === `${base.toLowerCase()}_scripts.qb`);
     const ownScriptsQ = ownScriptsFile
-        ? new qb.QbFile(fs.readFileSync(pyJoin(folder, ownScriptsFile)), ownScriptsFile)
+        ? new qb.QbFile(fs.readFileSync(path.join(folder, ownScriptsFile)), ownScriptsFile)
         : null;
     const ownNames: Names = new Map(ownQ.names);
     if (ownScriptsQ) for (const [k, v] of ownScriptsQ.names) ownNames.set(k, v);
@@ -393,7 +385,7 @@ export function inventory(base: string, thps4Dir: string, thugpro: string, thug2
 
     // --- collision: THUGPRO's against ours (THPS4's, converted)
     const mine = levelName(base);
-    const ourCol = pyJoin(thug2, STAGING, "levels", mine, `${mine}.col.xbx`);
+    const ourCol = path.join(thug2, STAGING, "levels", mine, `${mine}.col.xbx`);
     const tpColPrx = findPath(thugpro, "data", "pre", `${key}col.prx`);
     if (fs.existsSync(ourCol) && tpColPrx) {
         try {
@@ -451,12 +443,12 @@ export function inventory(base: string, thps4Dir: string, thugpro: string, thug2
 // converted there).
 export function applied(base: string, thugpro: string, thug2: string): Check[] | null {
     const mine = levelName(base);
-    const ourQb = pyJoin(thug2, STAGING, "levels", mine, `${mine}.qb`);
+    const ourQb = path.join(thug2, STAGING, "levels", mine, `${mine}.qb`);
     if (!fs.existsSync(ourQb)) return null;
     const edits = editsOf(base);
     const [array] = nodeArray(fs.readFileSync(ourQb), ourQb);
     const checks = checkEdits(edits, array);
-    const ourCol = pyJoin(thug2, STAGING, "levels", mine, `${mine}.col.xbx`);
+    const ourCol = path.join(thug2, STAGING, "levels", mine, `${mine}.col.xbx`);
     const tpColPrx = findPath(thugpro, "data", "pre", `${loadName(base).toLowerCase()}col.prx`);
     if (edits.duplicates.length && fs.existsSync(ourCol) && tpColPrx) {
         const theirs = [...prx.entries(tpColPrx, (n) => n.toLowerCase().endsWith(".col.xbx"))].map(([n, d]) =>

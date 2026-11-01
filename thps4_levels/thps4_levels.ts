@@ -32,7 +32,7 @@ import * as tex from "thug2-level-converter-core/level_port/tex.ts";
 import { parseConverterArgs } from "thug2-level-converter-core/lib/converter_args.ts";
 import { resolveInstall } from "thug2-level-converter-core/lib/install.ts";
 import { requireNs } from "thug2-level-converter-core/lib/neverscript.ts";
-import { isMain, print, pyExit, pyJoin, pyRepr, runMain } from "thug2-level-converter-core/lib/py.ts";
+import { isMain, print, pyExit, pyRepr, runMain } from "thug2-level-converter-core/lib/py.ts";
 import { search, sub } from "thug2-level-converter-core/lib/re.ts";
 import * as compat from "thug2-thugpro-compat/profile.ts";
 import * as thps4 from "./thps4.ts";
@@ -257,7 +257,7 @@ function globAll(folder: string): string[] {
     return fs
         .readdirSync(folder)
         .filter((name) => !name.startsWith("."))
-        .map((name) => pyJoin(folder, name));
+        .map((name) => path.join(folder, name));
 }
 
 // glob(join(folder, "*<suffix>")) on Windows: case-insensitive.
@@ -286,7 +286,7 @@ export function levelFiles(folder: string, base: string): LevelFiles {
 
 export function findFolder(levelsDir: string, name: string): string | null {
     for (const entry of fs.readdirSync(levelsDir)) {
-        if (entry.toLowerCase() === name.toLowerCase()) return pyJoin(levelsDir, entry);
+        if (entry.toLowerCase() === name.toLowerCase()) return path.join(levelsDir, entry);
     }
     return null;
 }
@@ -449,8 +449,8 @@ const sceneSectors = (scene4: thps4.Scene): Set<number> =>
 const NEW_FILES = new Map<string, Buffer | string>();
 
 export function cmdConvert(args: Args): void {
-    const levelsDir = pyJoin(resolveInstall(args.thps4, "thps4"), "data", "levels");
-    const out = args.out || pyJoin(args.thug2, STAGING);
+    const levelsDir = path.join(resolveInstall(args.thps4, "thps4"), "data", "levels");
+    const out = args.out || path.join(args.thug2, STAGING);
     args.ns = requireNs(args.ns); // (--ns, NEVERSCRIPT, ... or `npx thug2-neverscript fetch` - lib/neverscript.ts)
     const structs = levelStructs(args.thps4);
     const thug2 = new pedsCars.Thug2Assets(args.thug2);
@@ -633,7 +633,7 @@ export function cmdConvert(args: Args): void {
         if (cleared) report.push(`  ${cleared} geometry nodes without a scene sector: TrickObject / Cluster dropped`);
         const levelDir = staging.freshLevelFolder(out, name);
         fs.mkdirSync(levelDir, { recursive: true });
-        const qbPath = pyJoin(levelDir, `${name}.qb`);
+        const qbPath = path.join(levelDir, `${name}.qb`);
         // (network games: path followers, peds and cars kept out - no path manager or ped animations there -, restarts for the players)
         // (PC-THPS4-11)
         const [netText, marked] = portChange("net_game_nodes", base) ? nodes.netGameNodes(text, brought) : [text, 0];
@@ -702,7 +702,7 @@ export function cmdConvert(args: Args): void {
             if (skyFolder) {
                 sky = skyName(skyValue, base, args.legacyNames);
                 if (!skiesDone.has(sky)) {
-                    convertGeometry(skyFolder, skyValue, pyJoin(out, "levels", sky), sky, report);
+                    convertGeometry(skyFolder, skyValue, path.join(out, "levels", sky), sky, report);
                     skiesDone.add(sky);
                 }
             }
@@ -728,7 +728,7 @@ export function cmdConvert(args: Args): void {
         if (hasSetup) entry.setup_script = thps4Scripts.setupName(name);
         manifest.levels.push(entry);
     });
-    portedLevels.writeManifest(pyJoin(out, portedLevels.MANIFEST), manifest);
+    portedLevels.writeManifest(path.join(out, portedLevels.MANIFEST), manifest);
     print(report.join("\n"));
     print(`wrote ${out} (${manifest.levels.length} levels)`);
     print(staging.installHint(out));
@@ -737,7 +737,7 @@ export function cmdConvert(args: Args): void {
 // --- self-check -------------------------------------------------------------------------------------------------
 
 export function cmdSelfcheck(args: Args): number {
-    const pre = pyJoin(args.thug2, "Data", "pre");
+    const pre = path.join(args.thug2, "Data", "pre");
     let [checked, failures] = common.thug2RoundTrips(pre, [
         "LAscn.prx",
         "LAcol.prx",
@@ -745,9 +745,9 @@ export function cmdSelfcheck(args: Args): number {
         "TestLevelcol.prx",
         ...args.extra,
     ]);
-    const levelsDir = pyJoin(resolveInstall(args.thps4, "thps4"), "data", "levels");
+    const levelsDir = path.join(resolveInstall(args.thps4, "thps4"), "data", "levels");
     for (const folder of fs.readdirSync(levelsDir).sort()) {
-        for (const file of globAll(pyJoin(levelsDir, folder)).sort()) {
+        for (const file of globAll(path.join(levelsDir, folder)).sort()) {
             const low = file.toLowerCase();
             let what: string;
             try {

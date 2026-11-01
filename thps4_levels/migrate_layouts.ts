@@ -15,7 +15,7 @@ import { migrateText } from "thug2-level-converter-core/level_port/layouts.ts";
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { helpFromHeader } from "thug2-level-converter-core/lib/cli.ts";
 import { findPath } from "thug2-level-converter-core/lib/install.ts";
-import { hex8, isMain, print, pyExit, pyJoin, readTextPy, runMain } from "thug2-level-converter-core/lib/py.ts";
+import { hex8, isMain, print, pyExit, readTextPy, runMain } from "thug2-level-converter-core/lib/py.ts";
 import { LEVELS, levelName } from "./thps4_levels.ts";
 
 const FOLDER = "thug2-decomp-layouts";
@@ -57,8 +57,8 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
     for (const [oldName, newName] of renames(levels)) {
         const oldScene = qb.checksum(oldName);
         const newScene = qb.checksum(newName);
-        const oldPath = pyJoin(folder, `${hex8(oldScene)}.txt`);
-        const newPath = pyJoin(folder, `${hex8(newScene)}.txt`);
+        const oldPath = path.join(folder, `${hex8(oldScene)}.txt`);
+        const newPath = path.join(folder, `${hex8(newScene)}.txt`);
         if (!fs.existsSync(oldPath)) continue;
         if (fs.existsSync(newPath)) {
             print(`${oldName}: ${newName} already has a layout - ${path.win32.basename(oldPath)} left as it is`);

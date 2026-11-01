@@ -33,7 +33,7 @@ import { checksum, Name, Struct, Vector } from "thug2-level-converter-core/level
 import * as scriptPort from "thug2-level-converter-core/level_port/script_port.ts";
 import * as tex from "thug2-level-converter-core/level_port/tex.ts";
 import { resolveInstall } from "thug2-level-converter-core/lib/install.ts";
-import { pyJoin, pyMax, pyMin, pyParseInt, pyRepr, pySum, pyTruthy } from "thug2-level-converter-core/lib/py.ts";
+import { pyMax, pyMin, pyParseInt, pyRepr, pySum, pyTruthy } from "thug2-level-converter-core/lib/py.ts";
 import * as thps4 from "./thps4.ts";
 
 // THPS4's script files whose scripts may be brought along (the level's own files: "level"; the designers' shared
@@ -567,7 +567,7 @@ export class VehicleModels {
     model(file: string): Model | null {
         const k = file.toLowerCase();
         if (!this.cache.has(k)) {
-            const base = pyJoin(this.modelsDir, withoutExtension(file.replaceAll("/", "\\")));
+            const base = path.join(this.modelsDir, ...withoutExtension(file).split(/[\\/]/));
             let found: Model | null = null;
             if (fs.existsSync(`${base}mdl.dat`) && fs.existsSync(`${base}tex.dat`)) {
                 const scene = thps4.readScene(read(`${base}mdl.dat`), `${base}mdl.dat`);
