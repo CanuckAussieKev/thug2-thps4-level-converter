@@ -27,9 +27,11 @@ import * as portedLevels from "thug2-level-converter-core/level_port/ported_leve
 import * as qb from "thug2-level-converter-core/level_port/qb.ts";
 import { Name, Struct, Vector } from "thug2-level-converter-core/level_port/qb.ts";
 import * as scriptPort from "thug2-level-converter-core/level_port/script_port.ts";
+import * as staging from "thug2-level-converter-core/level_port/staging.ts";
 import * as tex from "thug2-level-converter-core/level_port/tex.ts";
 import { parseConverterArgs } from "thug2-level-converter-core/lib/converter_args.ts";
 import { resolveInstall } from "thug2-level-converter-core/lib/install.ts";
+import { requireNs } from "thug2-level-converter-core/lib/neverscript.ts";
 import { isMain, print, pyExit, pyJoin, pyRepr, runMain } from "thug2-level-converter-core/lib/py.ts";
 import { search, sub } from "thug2-level-converter-core/lib/re.ts";
 import * as compat from "thug2-thugpro-compat/profile.ts";
@@ -449,12 +451,12 @@ const NEW_FILES = new Map<string, Buffer | string>();
 export function cmdConvert(args: Args): void {
     const levelsDir = pyJoin(resolveInstall(args.thps4, "thps4"), "data", "levels");
     const out = args.out || pyJoin(args.thug2, STAGING);
-    if (!fs.existsSync(args.ns)) pyExit(common.nsMissing(args.ns));
+    args.ns = requireNs(args.ns); // (--ns, NEVERSCRIPT, ... or `npx thug2-neverscript fetch` - lib/neverscript.ts)
     const structs = levelStructs(args.thps4);
     const thug2 = new pedsCars.Thug2Assets(args.thug2);
     const port = args.noScripts ? null : new thps4Scripts.Port(args.thps4, args.thug2);
     const wanted = args.levels.length ? args.levels : LEVELS;
-    if (fs.existsSync(out) && fs.statSync(out).isDirectory()) fs.rmSync(out, { recursive: true });
+    staging.prepareStaging(out, !args.levels.length);
     fs.mkdirSync(out, { recursive: true });
     const manifest: { levels: Record<string, unknown>[] } = { levels: [] };
     let report: string[] = [];
@@ -629,7 +631,7 @@ export function cmdConvert(args: Args): void {
             : [text, 0];
         text = stripped;
         if (cleared) report.push(`  ${cleared} geometry nodes without a scene sector: TrickObject / Cluster dropped`);
-        const levelDir = pyJoin(out, "levels", name);
+        const levelDir = staging.freshLevelFolder(out, name);
         fs.mkdirSync(levelDir, { recursive: true });
         const qbPath = pyJoin(levelDir, `${name}.qb`);
         // (network games: path followers, peds and cars kept out - no path manager or ped animations there -, restarts for the players)
@@ -728,9 +730,8 @@ export function cmdConvert(args: Args): void {
     });
     portedLevels.writeManifest(pyJoin(out, portedLevels.MANIFEST), manifest);
     print(report.join("\n"));
-    print(
-        `wrote ${out} (${manifest.levels.length} levels); install with tools\\pipeline\\menu_level\\make_menu_level.ts`,
-    );
+    print(`wrote ${out} (${manifest.levels.length} levels)`);
+    print(staging.installHint(out));
 }
 
 // --- self-check -------------------------------------------------------------------------------------------------
@@ -792,7 +793,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
             thug2: { kind: "string", default: "C:\\Games\\THUG2\\Game" },
             thps4: { kind: "string", default: "C:\\Games\\THPS4" },
             out: { kind: "string" },
-            ns: { kind: "string", default: common.NS },
+            ns: { kind: "string", default: "" },
             "no-scripts": { kind: "flag" },
             // compatibility profile (thug2-level-converter-core/compat): thugpro - the skate shop's load script as THUGPRO's (default),
             // or none

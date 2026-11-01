@@ -7,8 +7,7 @@ made from your copies each time.
 
 ## Running it
 
-Needs Node 24+ (`npm install` once), NeverScript (`tools\build_neverscript.ps1` ->
-`out\neverscript\ns.exe`) and, to install the levels, thug2-content-pipeline/menu_level/make_menu_level.ts.
+Needs Node 24+ (`npm install` once), NeverScript's ns (`npx thug2-neverscript fetch`, or the decomp's `tools\build_neverscript.ps1`) and, to install the levels, thug2-content-pipeline/menu_level/make_menu_level.ts.
 
     node thps4_levels/thps4_levels.ts convert [--thps4 C:\Games\THPS4] [--thug2 C:\Games\THUG2]
     node tools/pipeline/menu_level/make_menu_level.ts
